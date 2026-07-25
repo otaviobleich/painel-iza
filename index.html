@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Painel · Studio Iza Teixeira</title>
+<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Poppins', sans-serif; color:#4A3B36; background:#FFF8F5; }
+  .signature { font-family:'Great Vibes', cursive; color:#B8860B; }
+  a { color:inherit; }
+
+  /* ---------- Login ---------- */
+  #loginScreen {
+    min-height:100vh; display:flex; align-items:center; justify-content:center; background:#FBEAE3;
+  }
+  .login-box {
+    background:#fff; border-radius:18px; padding:40px 36px; width:100%; max-width:360px;
+    box-shadow:0 20px 50px rgba(184,134,11,0.12); text-align:center;
+  }
+  .login-box .signature { font-size:32px; display:block; margin-bottom:18px; }
+  .login-box label { display:block; text-align:left; font-size:12px; color:#8A6E64; margin:14px 0 6px; }
+  .login-box input {
+    width:100%; padding:11px 14px; border:1px solid #F0D9CF; border-radius:10px; font-size:14px; font-family:inherit;
+  }
+  .login-box button { width:100%; margin-top:20px; }
+  .login-msg { font-size:13px; color:#C0554A; margin-top:12px; min-height:16px; }
+
+  /* ---------- Layout geral ---------- */
+  #appScreen { display:none; min-height:100vh; }
+  .sidebar {
+    width:220px; background:#fff; border-right:1px solid #F0D9CF;
+    padding:24px 16px; position:fixed; top:0; bottom:0; left:0; display:flex; flex-direction:column;
+  }
+  .sidebar .signature { font-size:26px; display:block; text-align:center; margin-bottom:28px; }
+  .nav-item {
+    display:flex; align-items:center; gap:10px; padding:11px 14px; border-radius:10px;
+    font-size:14px; color:#8A6E64; cursor:pointer; margin-bottom:4px; font-weight:500;
+  }
+  .nav-item:hover { background:#FFF8F5; }
+  .nav-item.active { background:#FBEAE3; color:#B8860B; }
+  .nav-item { justify-content:space-between; }
+  .nav-badge {
+    display:none; background:#E8967A; color:#fff; font-size:11px; font-weight:600;
+    border-radius:10px; min-width:18px; height:18px; padding:0 5px;
+    align-items:center; justify-content:center; line-height:18px; text-align:center;
+  }
+  .nav-badge.show { display:inline-block; }
+  #notifBanner {
+    display:none; position:fixed; top:18px; right:18px; z-index:500;
+    background:#fff; border:1px solid #F0D9CF; border-left:4px solid #E8967A;
+    border-radius:12px; padding:14px 18px; box-shadow:0 12px 30px rgba(184,134,11,0.18);
+    font-size:13px; max-width:280px; cursor:pointer;
+  }
+  #notifBanner.show { display:block; animation:notifPop 0.25s ease; }
+  @keyframes notifPop { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:translateY(0); } }
+  .sidebar .logout {
+    margin-top:auto; font-size:13px; color:#C0554A; cursor:pointer; text-align:center; padding:10px;
+  }
+  .main { margin-left:220px; padding:32px 40px; width:calc(100% - 220px); }
+  .page { display:none; }
+  .page.active { display:block; }
+  .page-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; flex-wrap:wrap; gap:12px; }
+  .page-header h1 { font-size:22px; font-weight:600; }
+
+  .btn {
+    background:#E8967A; color:#fff; border:none; padding:11px 22px;
+    border-radius:24px; font-size:13px; font-weight:500; cursor:pointer; transition:0.2s;
+  }
+  .btn:hover { background:#D8825F; }
+  .btn-outline { background:#fff; border:1px solid #E8967A; color:#E8967A; }
+  .btn-outline:hover { background:#FBEAE3; }
+  .btn-small { padding:6px 14px; font-size:12px; border-radius:16px; }
+  .btn-danger { background:#fff; border:1px solid #E7B3AC; color:#C0554A; }
+  .btn-danger:hover { background:#FBEAE3; }
+
+  input, select { font-family:'Poppins', sans-serif; }
+  input[type=text], input[type=number], input[type=date], input[type=month], select {
+    padding:9px 12px; border:1px solid #F0D9CF; border-radius:10px; font-size:13px; color:#4A3B36;
+  }
+
+  /* ---------- Cards do dashboard ---------- */
+  .kpi-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(190px,1fr)); gap:16px; margin-bottom:28px; }
+  .kpi-card { background:#fff; border:1px solid #F0D9CF; border-radius:16px; padding:20px; }
+  .kpi-card .kpi-label { font-size:12px; color:#8A6E64; margin-bottom:8px; }
+  .kpi-card .kpi-value { font-size:24px; font-weight:600; }
+  .kpi-card.profit .kpi-value { color:#5C7A5C; }
+  .kpi-card.profit.negative .kpi-value { color:#C0554A; }
+  .kpi-card.gold .kpi-value { color:#B8860B; }
+
+  .panel { background:#fff; border:1px solid #F0D9CF; border-radius:16px; padding:22px; margin-bottom:20px; }
+  .panel h3 { font-size:15px; font-weight:600; margin-bottom:16px; }
+
+  table { width:100%; border-collapse:collapse; }
+  th, td { text-align:left; padding:10px 8px; font-size:13px; border-bottom:1px solid #F0D9CF; }
+  th { color:#8A6E64; font-weight:500; font-size:12px; }
+  tr:last-child td { border-bottom:none; }
+
+  .badge { padding:4px 10px; border-radius:12px; font-size:11px; font-weight:500; display:inline-block; }
+  .badge.pendente { background:#FBEAE3; color:#B8860B; }
+  .badge.confirmado, .badge.concluida { background:#E4EEE1; color:#5C7A5C; }
+  .badge.concluido { background:#E4EEE1; color:#5C7A5C; }
+  .badge.cancelado, .badge.cancelada { background:#FBE3E1; color:#C0554A; }
+  .badge.pago { background:#E4EEE1; color:#5C7A5C; }
+  .badge.aguardando { background:#FBEAE3; color:#B8860B; }
+  .badge.paga-depois { background:#FDEBD3; color:#A66A1E; }
+  .pay-btn { background:none; border:1px solid #F0D9CF; border-radius:16px; padding:5px 10px; font-size:11px; cursor:pointer; color:#4A3B36; }
+  .pay-btn:hover { background:#FBEAE3; }
+  .payment-cell { display:flex; flex-direction:column; gap:4px; align-items:flex-start; }
+  .payment-cell small { color:#8A6E64; font-size:11px; }
+
+  .form-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(160px,1fr)); gap:12px; align-items:end; }
+  .form-grid label { display:block; font-size:12px; color:#8A6E64; margin-bottom:6px; }
+  .form-grid .field input, .form-grid .field select { width:100%; }
+
+  .empty-note { font-size:13px; color:#8A6E64; padding:12px 0; }
+  select.status-select { font-size:12px; padding:5px 8px; border-radius:8px; }
+
+  @media (max-width:900px) {
+    .sidebar { position:static; width:100%; flex-direction:row; overflow-x:auto; padding:12px; }
+    .sidebar .signature { display:none; }
+    .sidebar .logout { margin-top:0; }
+    .main { margin-left:0; width:100%; padding:20px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===================== LOGIN ===================== -->
+<div id="loginScreen">
+  <div class="login-box">
+    <span class="signature">Studio Iza Teixeira</span>
+    <label for="loginEmail">E-mail</label>
+    <input type="text" id="loginEmail" placeholder="seu@email.com">
+    <label for="loginPassword">Senha</label>
+    <input type="text" id="loginPassword" placeholder="Senha" style="-webkit-text-security:disc;">
+    <button class="btn" onclick="doLogin()">Entrar</button>
+    <p class="login-msg" id="loginMsg"></p>
+  </div>
+</div>
+
+<!-- ===================== APP ===================== -->
+<div id="appScreen">
+  <div class="sidebar">
+    <span class="signature">Iza Teixeira</span>
+    <div class="nav-item active" data-page="dashboard">📊 Dashboard</div>
+    <div class="nav-item" data-page="agendamentos">📅 Agendamentos <span class="nav-badge" id="badgeAgendamentos"></span></div>
+    <div class="nav-item" data-page="produtos">🧴 Produtos</div>
+    <div class="nav-item" data-page="compras">📦 Compras / Estoque</div>
+    <div class="nav-item" data-page="vendas">💰 Vendas <span class="nav-badge" id="badgeVendas"></span></div>
+    <div class="logout" onclick="doLogout()">Sair</div>
+  </div>
+
+  <div class="main">
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-header">
+        <h1>Dashboard</h1>
+        <input type="month" id="dashMonth">
+      </div>
+      <div class="kpi-grid">
+        <div class="kpi-card"><div class="kpi-label">Atendimentos concluídos</div><div class="kpi-value" id="kpiAppointments">–</div></div>
+        <div class="kpi-card gold"><div class="kpi-label">Faturamento serviços</div><div class="kpi-value" id="kpiServiceRevenue">–</div></div>
+        <div class="kpi-card gold"><div class="kpi-label">Faturamento produtos</div><div class="kpi-value" id="kpiProductRevenue">–</div></div>
+        <div class="kpi-card"><div class="kpi-label">Investido em produtos</div><div class="kpi-value" id="kpiInvestment">–</div></div>
+        <div class="kpi-card profit" id="kpiProfitCard"><div class="kpi-label">Lucro do mês</div><div class="kpi-value" id="kpiProfit">–</div></div>
+      </div>
+      <div class="panel">
+        <h3>Como o lucro é calculado</h3>
+        <p style="font-size:13px; color:#8A6E64; line-height:1.7;">
+          Faturamento de serviços (atendimentos concluídos) + faturamento de produtos (vendas concluídas) − investimento em produtos (compras registradas no mês). Só entram no cálculo os agendamentos marcados como "concluído" e as vendas marcadas como "concluída".
+        </p>
+      </div>
+    </div>
+
+    <!-- AGENDAMENTOS -->
+    <div class="page" id="page-agendamentos">
+      <div class="page-header"><h1>Agendamentos</h1></div>
+      <div class="panel">
+        <table>
+          <thead><tr><th>Data</th><th>Hora</th><th>Cliente</th><th>WhatsApp</th><th>Serviço</th><th>Status</th><th>Pagamento</th><th></th></tr></thead>
+          <tbody id="appointmentsBody"><tr><td colspan="8" class="empty-note">Carregando...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- PRODUTOS -->
+    <div class="page" id="page-produtos">
+      <div class="page-header"><h1>Produtos</h1></div>
+      <div class="panel">
+        <h3>Novo produto</h3>
+        <div class="form-grid">
+          <div class="field"><label>Nome</label><input type="text" id="newProductName"></div>
+          <div class="field"><label>Preço de venda (R$)</label><input type="number" id="newProductPrice" step="0.01"></div>
+          <div class="field"><label>URL da imagem</label><input type="text" id="newProductImage" placeholder="produto1.jpg"></div>
+          <div class="field"><button class="btn" onclick="createProduct()">Adicionar produto</button></div>
+        </div>
+      </div>
+      <div class="panel">
+        <table>
+          <thead><tr><th>Produto</th><th>Preço</th><th>Estoque</th><th>Ativo</th><th></th></tr></thead>
+          <tbody id="productsBody"><tr><td colspan="5" class="empty-note">Carregando...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- COMPRAS / ESTOQUE -->
+    <div class="page" id="page-compras">
+      <div class="page-header"><h1>Compras / Estoque</h1></div>
+      <div class="panel">
+        <h3>Registrar compra (investimento)</h3>
+        <div class="form-grid">
+          <div class="field"><label>Produto</label><select id="purchaseProduct"></select></div>
+          <div class="field"><label>Quantidade</label><input type="number" id="purchaseQty" value="1" min="1"></div>
+          <div class="field"><label>Custo unitário (R$)</label><input type="number" id="purchaseCost" step="0.01"></div>
+          <div class="field"><label>Data</label><input type="date" id="purchaseDate"></div>
+          <div class="field"><label>Fornecedor</label><input type="text" id="purchaseSupplier"></div>
+          <div class="field"><button class="btn" onclick="createPurchase()">Registrar compra</button></div>
+        </div>
+      </div>
+      <div class="panel">
+        <table>
+          <thead><tr><th>Data</th><th>Produto</th><th>Qtd.</th><th>Custo unit.</th><th>Total investido</th><th>Fornecedor</th></tr></thead>
+          <tbody id="purchasesBody"><tr><td colspan="6" class="empty-note">Carregando...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- VENDAS -->
+    <div class="page" id="page-vendas">
+      <div class="page-header"><h1>Vendas de produtos</h1></div>
+      <div class="panel">
+        <h3>Registrar venda presencial</h3>
+        <div class="form-grid">
+          <div class="field"><label>Produto</label><select id="saleProduct"></select></div>
+          <div class="field"><label>Quantidade</label><input type="number" id="saleQty" value="1" min="1"></div>
+          <div class="field"><label>Preço unitário (R$)</label><input type="number" id="salePrice" step="0.01"></div>
+          <div class="field"><label>Cliente (opcional)</label><input type="text" id="saleClient"></div>
+          <div class="field"><button class="btn" onclick="createSale()">Registrar venda concluída</button></div>
+        </div>
+      </div>
+      <div class="panel">
+        <table>
+          <thead><tr><th>Data</th><th>Produto</th><th>Qtd.</th><th>Total</th><th>Cliente</th><th>Status</th><th>Pagamento</th></tr></thead>
+          <tbody id="salesBody"><tr><td colspan="7" class="empty-note">Carregando...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div id="notifBanner" onclick="dismissNotifBanner()"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../config.js"></script>
+<script>
+  const brl = (n) => 'R$ ' + Number(n || 0).toFixed(2).replace('.', ',');
+
+  // ---------------- LOGIN ----------------
+  async function doLogin() {
+    const email = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    const msg = document.getElementById('loginMsg');
+    const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+    if (error) {
+      msg.textContent = 'E-mail ou senha incorretos.';
+      return;
+    }
+    showApp();
+  }
+  async function doLogout() {
+    await supabaseClient.auth.signOut();
+    document.getElementById('appScreen').style.display = 'none';
+    document.getElementById('loginScreen').style.display = 'flex';
+  }
+  async function checkSession() {
+    const { data } = await supabaseClient.auth.getSession();
+    if (data.session) showApp();
+  }
+  function showApp() {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('appScreen').style.display = 'flex';
+    initApp();
+  }
+
+  // ---------------- NAVEGAÇÃO ----------------
+  document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', () => {
+      document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      item.classList.add('active');
+      document.getElementById('page-' + item.dataset.page).classList.add('active');
+    });
+  });
+
+  let appInitialized = false;
+  function initApp() {
+    if (appInitialized) return;
+    appInitialized = true;
+    const now = new Date();
+    document.getElementById('dashMonth').value = now.toISOString().slice(0, 7);
+    document.getElementById('purchaseDate').value = now.toISOString().slice(0, 10);
+    document.getElementById('dashMonth').addEventListener('change', loadDashboard);
+    loadDashboard();
+    loadAppointments();
+    loadProducts();
+    loadPurchases();
+    loadSales();
+    updateBadges();
+    subscribeRealtime();
+  }
+
+  // ---------------- NOTIFICAÇÕES (badge + som) ----------------
+  function playNotificationSound() {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      [0, 0.15].forEach((delay, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.type = 'sine';
+        osc.frequency.value = i === 0 ? 880 : 1108;
+        gain.gain.setValueAtTime(0.0001, ctx.currentTime + delay);
+        gain.gain.exponentialRampToValueAtTime(0.2, ctx.currentTime + delay + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + delay + 0.35);
+        osc.start(ctx.currentTime + delay);
+        osc.stop(ctx.currentTime + delay + 0.4);
+      });
+    } catch (e) { /* navegador bloqueou áudio automático, sem problema */ }
+  }
+
+  async function updateBadges() {
+    const { count: apptCount } = await supabaseClient
+      .from('appointments').select('id', { count: 'exact', head: true }).eq('status', 'pendente');
+    const { count: saleCount } = await supabaseClient
+      .from('product_sales').select('id', { count: 'exact', head: true }).eq('status', 'pendente');
+
+    const apptBadge = document.getElementById('badgeAgendamentos');
+    const saleBadge = document.getElementById('badgeVendas');
+    apptBadge.textContent = apptCount || '';
+    apptBadge.classList.toggle('show', !!apptCount);
+    saleBadge.textContent = saleCount || '';
+    saleBadge.classList.toggle('show', !!saleCount);
+  }
+
+  function showNotifBanner(text) {
+    const banner = document.getElementById('notifBanner');
+    banner.textContent = text;
+    banner.classList.add('show');
+    clearTimeout(window._notifTimeout);
+    window._notifTimeout = setTimeout(() => banner.classList.remove('show'), 6000);
+  }
+  function dismissNotifBanner() {
+    document.getElementById('notifBanner').classList.remove('show');
+  }
+
+  function subscribeRealtime() {
+    supabaseClient
+      .channel('novos-pedidos')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'appointments' }, (payload) => {
+        playNotificationSound();
+        const a = payload.new;
+        const avisoPagamento = a.payment_timing === 'depois'
+          ? `vai pagar ${brl(a.amount_due_later)} depois do atendimento 🕐`
+          : `pagou sinal de ${brl(a.amount_due_now)} agora, resta ${brl(a.amount_due_later)} depois`;
+        showNotifBanner(`Novo agendamento de ${a.client_name} 📅 — ${avisoPagamento}`);
+        updateBadges();
+        loadAppointments();
+      })
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'product_sales' }, (payload) => {
+        if (payload.new.status !== 'pendente') return;
+        playNotificationSound();
+        showNotifBanner(`Novo pedido de produto 💰`);
+        updateBadges();
+        loadSales();
+      })
+      .subscribe();
+  }
+
+  // ---------------- DASHBOARD ----------------
+  async function loadDashboard() {
+    const monthStr = document.getElementById('dashMonth').value; // yyyy-mm
+    const [y, m] = monthStr.split('-').map(Number);
+    const startDate = `${monthStr}-01`;
+    const endDate = new Date(y, m, 0).toISOString().slice(0, 10); // último dia do mês
+
+    const { data: appts } = await supabaseClient
+      .from('appointments')
+      .select('id, status, service_id, services(price)')
+      .eq('status', 'concluido')
+      .gte('appointment_date', startDate)
+      .lte('appointment_date', endDate);
+
+    const apptCount = (appts || []).length;
+    const serviceRevenue = (appts || []).reduce((sum, a) => sum + Number(a.services?.price || 0), 0);
+
+    const { data: sales } = await supabaseClient
+      .from('product_sales')
+      .select('total_price')
+      .eq('status', 'concluida')
+      .gte('sale_date', startDate)
+      .lte('sale_date', endDate);
+
+    const productRevenue = (sales || []).reduce((sum, s) => sum + Number(s.total_price || 0), 0);
+
+    const { data: purchases } = await supabaseClient
+      .from('product_purchases')
+      .select('total_cost')
+      .gte('purchase_date', startDate)
+      .lte('purchase_date', endDate);
+
+    const investment = (purchases || []).reduce((sum, p) => sum + Number(p.total_cost || 0), 0);
+    const profit = serviceRevenue + productRevenue - investment;
+
+    document.getElementById('kpiAppointments').textContent = apptCount;
+    document.getElementById('kpiServiceRevenue').textContent = brl(serviceRevenue);
+    document.getElementById('kpiProductRevenue').textContent = brl(productRevenue);
+    document.getElementById('kpiInvestment').textContent = brl(investment);
+    document.getElementById('kpiProfit').textContent = brl(profit);
+    document.getElementById('kpiProfitCard').classList.toggle('negative', profit < 0);
+  }
+
+  // ---------------- AGENDAMENTOS ----------------
+  async function loadAppointments() {
+    const body = document.getElementById('appointmentsBody');
+    const { data, error } = await supabaseClient
+      .from('appointments')
+      .select('id, appointment_date, start_time, client_name, client_phone, status, payment_status, payment_timing, amount_due_now, amount_due_later, services(name)')
+      .order('appointment_date', { ascending: false })
+      .order('start_time', { ascending: false })
+      .limit(200);
+
+    if (error || !data || data.length === 0) {
+      body.innerHTML = '<tr><td colspan="8" class="empty-note">Nenhum agendamento ainda.</td></tr>';
+      return;
+    }
+    body.innerHTML = data.map(a => `
+      <tr>
+        <td>${a.appointment_date.split('-').reverse().join('/')}</td>
+        <td>${a.start_time.slice(0,5)}</td>
+        <td>${a.client_name}</td>
+        <td>${a.client_phone}</td>
+        <td>${a.services?.name || '—'}</td>
+        <td>
+          <select class="status-select" onchange="updateAppointmentStatus('${a.id}', this.value)">
+            ${['pendente','confirmado','concluido','cancelado'].map(s =>
+              `<option value="${s}" ${s === a.status ? 'selected' : ''}>${s}</option>`).join('')}
+          </select>
+        </td>
+        <td>${renderPaymentCell(a)}</td>
+        <td><button class="btn-danger btn-small" onclick="deleteAppointment('${a.id}')">Excluir</button></td>
+      </tr>
+    `).join('');
+  }
+
+  // Monta a célula de pagamento: mostra se a cliente vai pagar depois do
+  // atendimento (sinal amarelo, bem visível) ou se já pagou o sinal/tudo.
+  function renderPaymentCell(a) {
+    if (a.payment_timing === 'depois') {
+      return `
+        <div class="payment-cell">
+          <span class="badge paga-depois">paga depois · ${brl(a.amount_due_later)}</span>
+          ${a.payment_status === 'pago'
+            ? '<span class="badge pago">recebido</span>'
+            : `<button class="pay-btn" onclick="markAppointmentPaid('${a.id}')">marcar como recebido</button>`}
+        </div>`;
+    }
+    return `
+      <div class="payment-cell">
+        ${a.payment_status === 'pago'
+          ? `<span class="badge pago">sinal pago · ${brl(a.amount_due_now)}</span>`
+          : `<button class="pay-btn" onclick="markAppointmentPaid('${a.id}')">marcar sinal como pago</button>`}
+        <small>restam ${brl(a.amount_due_later)} depois do atendimento</small>
+      </div>`;
+  }
+
+  async function markAppointmentPaid(id) {
+    await supabaseClient.from('appointments').update({ payment_status: 'pago' }).eq('id', id);
+    loadAppointments();
+  }
+  async function updateAppointmentStatus(id, status) {
+    await supabaseClient.from('appointments').update({ status }).eq('id', id);
+    loadDashboard();
+    updateBadges();
+  }
+  async function deleteAppointment(id) {
+    if (!confirm('Excluir este agendamento?')) return;
+    await supabaseClient.from('appointments').delete().eq('id', id);
+    loadAppointments();
+  }
+
+  // ---------------- PRODUTOS ----------------
+  async function loadProducts() {
+    const body = document.getElementById('productsBody');
+    const { data, error } = await supabaseClient.from('products').select('*').order('name');
+    if (error || !data || data.length === 0) {
+      body.innerHTML = '<tr><td colspan="5" class="empty-note">Nenhum produto cadastrado.</td></tr>';
+      populateProductSelects([]);
+      return;
+    }
+    body.innerHTML = data.map(p => `
+      <tr>
+        <td>${p.name}</td>
+        <td>${brl(p.price)}</td>
+        <td>${p.stock_quantity}</td>
+        <td>
+          <select class="status-select" onchange="toggleProductActive('${p.id}', this.value)">
+            <option value="true" ${p.active ? 'selected' : ''}>ativo</option>
+            <option value="false" ${!p.active ? 'selected' : ''}>inativo</option>
+          </select>
+        </td>
+        <td><button class="btn-danger btn-small" onclick="deleteProduct('${p.id}')">Excluir</button></td>
+      </tr>
+    `).join('');
+    populateProductSelects(data);
+  }
+  function populateProductSelects(products) {
+    const options = products.map(p => `<option value="${p.id}" data-price="${p.price}">${p.name}</option>`).join('');
+    document.getElementById('purchaseProduct').innerHTML = options || '<option disabled>Cadastre um produto primeiro</option>';
+    document.getElementById('saleProduct').innerHTML = options || '<option disabled>Cadastre um produto primeiro</option>';
+    document.getElementById('saleProduct').addEventListener('change', function() {
+      const opt = this.selectedOptions[0];
+      if (opt && opt.dataset.price) document.getElementById('salePrice').value = opt.dataset.price;
+    });
+  }
+  async function createProduct() {
+    const name = document.getElementById('newProductName').value.trim();
+    const price = parseFloat(document.getElementById('newProductPrice').value);
+    const image_url = document.getElementById('newProductImage').value.trim();
+    if (!name || isNaN(price)) { alert('Preencha nome e preço.'); return; }
+    await supabaseClient.from('products').insert({ name, price, image_url, stock_quantity: 0 });
+    document.getElementById('newProductName').value = '';
+    document.getElementById('newProductPrice').value = '';
+    document.getElementById('newProductImage').value = '';
+    loadProducts();
+  }
+  async function toggleProductActive(id, value) {
+    await supabaseClient.from('products').update({ active: value === 'true' }).eq('id', id);
+  }
+  async function deleteProduct(id) {
+    if (!confirm('Excluir este produto?')) return;
+    await supabaseClient.from('products').delete().eq('id', id);
+    loadProducts();
+  }
+
+  // ---------------- COMPRAS ----------------
+  async function loadPurchases() {
+    const body = document.getElementById('purchasesBody');
+    const { data, error } = await supabaseClient
+      .from('product_purchases')
+      .select('id, purchase_date, quantity, unit_cost, total_cost, supplier, products(name)')
+      .order('purchase_date', { ascending: false })
+      .limit(200);
+    if (error || !data || data.length === 0) {
+      body.innerHTML = '<tr><td colspan="6" class="empty-note">Nenhuma compra registrada.</td></tr>';
+      return;
+    }
+    body.innerHTML = data.map(p => `
+      <tr>
+        <td>${p.purchase_date.split('-').reverse().join('/')}</td>
+        <td>${p.products?.name || '—'}</td>
+        <td>${p.quantity}</td>
+        <td>${brl(p.unit_cost)}</td>
+        <td>${brl(p.total_cost)}</td>
+        <td>${p.supplier || '—'}</td>
+      </tr>
+    `).join('');
+  }
+  async function createPurchase() {
+    const product_id = document.getElementById('purchaseProduct').value;
+    const quantity = parseInt(document.getElementById('purchaseQty').value, 10);
+    const unit_cost = parseFloat(document.getElementById('purchaseCost').value);
+    const purchase_date = document.getElementById('purchaseDate').value;
+    const supplier = document.getElementById('purchaseSupplier').value.trim();
+    if (!product_id || !quantity || isNaN(unit_cost)) { alert('Preencha produto, quantidade e custo.'); return; }
+    await supabaseClient.from('product_purchases').insert({ product_id, quantity, unit_cost, purchase_date, supplier });
+    document.getElementById('purchaseQty').value = 1;
+    document.getElementById('purchaseCost').value = '';
+    document.getElementById('purchaseSupplier').value = '';
+    loadPurchases();
+    loadProducts();
+    loadDashboard();
+  }
+
+  // ---------------- VENDAS ----------------
+  async function loadSales() {
+    const body = document.getElementById('salesBody');
+    const { data, error } = await supabaseClient
+      .from('product_sales')
+      .select('id, sale_date, quantity, total_price, client_name, status, payment_status, products(name)')
+      .order('sale_date', { ascending: false })
+      .limit(200);
+    if (error || !data || data.length === 0) {
+      body.innerHTML = '<tr><td colspan="7" class="empty-note">Nenhuma venda registrada.</td></tr>';
+      return;
+    }
+    body.innerHTML = data.map(s => `
+      <tr>
+        <td>${s.sale_date.split('-').reverse().join('/')}</td>
+        <td>${s.products?.name || '—'}</td>
+        <td>${s.quantity}</td>
+        <td>${brl(s.total_price)}</td>
+        <td>${s.client_name || '—'}</td>
+        <td>
+          <select class="status-select" onchange="updateSaleStatus('${s.id}', this.value)">
+            ${['pendente','concluida','cancelada'].map(st =>
+              `<option value="${st}" ${st === s.status ? 'selected' : ''}>${st}</option>`).join('')}
+          </select>
+        </td>
+        <td>
+          ${s.payment_status === 'pago'
+            ? '<span class="badge pago">pago</span>'
+            : `<button class="pay-btn" onclick="markSalePaid('${s.id}')">marcar como pago</button>`}
+        </td>
+      </tr>
+    `).join('');
+  }
+  async function markSalePaid(id) {
+    await supabaseClient.from('product_sales').update({ payment_status: 'pago' }).eq('id', id);
+    loadSales();
+  }
+  async function updateSaleStatus(id, status) {
+    await supabaseClient.from('product_sales').update({ status }).eq('id', id);
+    loadProducts();
+    loadDashboard();
+    updateBadges();
+  }
+  async function createSale() {
+    const product_id = document.getElementById('saleProduct').value;
+    const quantity = parseInt(document.getElementById('saleQty').value, 10);
+    const unit_price = parseFloat(document.getElementById('salePrice').value);
+    const client_name = document.getElementById('saleClient').value.trim();
+    if (!product_id || !quantity || isNaN(unit_price)) { alert('Preencha produto, quantidade e preço.'); return; }
+    await supabaseClient.from('product_sales').insert({ product_id, quantity, unit_price, client_name, status: 'concluida', payment_status: 'pago' });
+    document.getElementById('saleQty').value = 1;
+    document.getElementById('saleClient').value = '';
+    loadSales();
+    loadProducts();
+    loadDashboard();
+  }
+
+  checkSession();
+</script>
+
+</body>
+</html>
