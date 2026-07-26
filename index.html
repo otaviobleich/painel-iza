@@ -195,7 +195,7 @@
         <div class="form-grid">
           <div class="field"><label>Nome</label><input type="text" id="newProductName"></div>
           <div class="field"><label>Preço de venda (R$)</label><input type="number" id="newProductPrice" step="0.01"></div>
-          <div class="field"><label>URL da imagem</label><input type="text" id="newProductImage" placeholder="produto1.jpg"></div>
+          <div class="field"><label>Foto do produto</label><input type="file" id="newProductImage" accept="image/*"></div>
           <div class="field"><button class="btn" onclick="createProduct()">Adicionar produto</button></div>
         </div>
       </div>
@@ -256,7 +256,7 @@
 <div id="notifBanner" onclick="dismissNotifBanner()"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="../config.js"></script>
+<script src="config.js"></script>
 <script>
   const brl = (n) => 'R$ ' + Number(n || 0).toFixed(2).replace('.', ',');
 
@@ -530,12 +530,28 @@
   async function createProduct() {
     const name = document.getElementById('newProductName').value.trim();
     const price = parseFloat(document.getElementById('newProductPrice').value);
-    const image_url = document.getElementById('newProductImage').value.trim();
+    const fileInput = document.getElementById('newProductImage');
+    const file = fileInput.files[0];
     if (!name || isNaN(price)) { alert('Preencha nome e preço.'); return; }
+
+    let image_url = '';
+    if (file) {
+      // Nome único pra evitar sobrescrever foto de outro produto com o mesmo nome de arquivo
+      const ext = file.name.split('.').pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+      const { error: uploadError } = await supabaseClient.storage.from('products').upload(fileName, file);
+      if (uploadError) {
+        alert('Não foi possível subir a foto do produto. Tente novamente.');
+        return;
+      }
+      const { data: publicData } = supabaseClient.storage.from('products').getPublicUrl(fileName);
+      image_url = publicData.publicUrl;
+    }
+
     await supabaseClient.from('products').insert({ name, price, image_url, stock_quantity: 0 });
     document.getElementById('newProductName').value = '';
     document.getElementById('newProductPrice').value = '';
-    document.getElementById('newProductImage').value = '';
+    fileInput.value = '';
     loadProducts();
   }
   async function toggleProductActive(id, value) {
